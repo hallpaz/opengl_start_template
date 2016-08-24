@@ -21,5 +21,13 @@ target_link_libraries(opengl_template ${GLFW_STATIC_LIBRARIES})
 target_link_libraries(opengl_template ${GLEW_LIBRARIES})
 target_link_libraries(opengl_template ${OPENGL_LIBRARIES})
 
+IF(APPLE)
+    find_library(COCOA_LIBRARY Cocoa)
+    find_library(IOKIT_LIBRARY IOKit)
+    find_library(COREVIDEO_LIBRARY CoreVideo)
+    set(EXTRA_LIBS ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY})
+    target_link_libraries(opengl_template ${EXTRA_LIBS})
+ENDIF(APPLE)
+
 
 

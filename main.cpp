@@ -10,7 +10,7 @@
 
 // Shader sources
 const GLchar* vertexSource =
-    "#version 150 core\n"
+    "#version 330\n"
     "in vec2 position;"
     "in vec3 color;"
     "out vec3 Color;"
@@ -19,7 +19,7 @@ const GLchar* vertexSource =
     "   gl_Position = vec4(position, 0.0, 1.0);"
     "}";
 const GLchar* fragmentSource =
-    "#version 150 core\n"
+    "#version 330\n"
     "in vec3 Color;"
     "out vec4 outColor;"
     "void main() {"
@@ -29,7 +29,12 @@ const GLchar* fragmentSource =
 int main(int argc, char* argv[])
 {
     glfwInit();
-    GLFWwindow* window = glfwCreateWindow(640, 480, "OpenGL", NULL, NULL);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr);
     glfwMakeContextCurrent(window);
 
     // Initialize GLEW
@@ -77,6 +82,15 @@ int main(int argc, char* argv[])
     glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
     glCompileShader(fragmentShader);
 
+    GLint success;
+    GLchar infoLog[512];
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+    if(!success)
+    {
+        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
+    }
+
     // Link the vertex and fragment shader into a shader program
     GLuint shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
@@ -112,7 +126,7 @@ int main(int argc, char* argv[])
 
         // Swap buffers
 
-}
+    }
     glDeleteProgram(shaderProgram);
     glDeleteShader(fragmentShader);
     glDeleteShader(vertexShader);
