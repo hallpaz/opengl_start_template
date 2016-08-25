@@ -8,6 +8,11 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+/*-------------------------------------------------------------------------------*/
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
+
+/*-------------------------------------------------------------------------------*/
 // Shader sources
 const GLchar* vertexSource =
     "#version 330\n"
@@ -26,20 +31,39 @@ const GLchar* fragmentSource =
     "   outColor = vec4(Color, 1.0);"
     "}";
 
+const int WINDOW_WIDTH = 800;
+const int WINDOW_HEIGHT = 600;
+
 int main(int argc, char* argv[])
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // Mac OS X Systems need this option
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "OpenGL", nullptr, nullptr);
+    if (window == nullptr)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
     glfwMakeContextCurrent(window);
 
     // Initialize GLEW
     glewExperimental = GL_TRUE;
-    glewInit();
+    if (glewInit() != GLEW_OK)
+    {
+        std::cout << "Failed to initialize GLEW" << std::endl;
+        return -1;
+    }
+    int width, height;
+    glfwGetFramebufferSize(window, &width, &height);
+    glViewport(0, 0, width, height);
+
+    glfwSetKeyCallback(window, key_callback);
 
     // Create Vertex Array Object
     GLuint vao;
@@ -110,22 +134,17 @@ int main(int argc, char* argv[])
 
     while(!glfwWindowShouldClose(window))
     {
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-            glfwSetWindowShouldClose(window, GL_TRUE);
-
-        glfwSwapBuffers(window);
         glfwPollEvents();
 
-
+        // Rendering Commands
         // Clear the screen to black
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
-
         // Draw a rectangle from the 2 triangles using 6 indices
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         // Swap buffers
-
+        glfwSwapBuffers(window);
     }
     glDeleteProgram(shaderProgram);
     glDeleteShader(fragmentShader);
@@ -135,4 +154,15 @@ int main(int argc, char* argv[])
     glDeleteBuffers(1, &vbo);
 
     glDeleteVertexArrays(1, &vao);
+
+    glfwTerminate();
+    return 0;
+}
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode)
+{
+    // When a user presses the escape key, we set the WindowShouldClose property to true,
+    // closing the application
+    if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GL_TRUE);
 }
